@@ -1,54 +1,52 @@
 #include <iostream>
-#include <conio.h>
 #include <Windows.h>
-
-int width = 20;
-int height = 20;
-int snakeX, snakeY, fruitX, fruitY;
+#include <vector>
+#include <conio.h>
 
 bool gameOver;
+int boardWidth = 20;
+int boardHeight = 20;
+std::vector<int> snakeX, snakeY;
+int fruitX, fruitY;
+int snakeL;
 
-
-enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
+enum eDirection {STOP = 0, LEFT, RIGHT, UP, DOWN};
 eDirection dir;
-
-int tailX[100], tailY[100];
-int tailN;
-
-
 
 void setup()
 {
 	gameOver = false;
+	snakeX.push_back(10);
+	snakeY.push_back(10);
 	dir = STOP;
-	snakeX = 10;
-	snakeY = 10;
-	fruitX = rand() % width;
-	fruitY = rand() % height;
+	snakeL = 1;
+	fruitX = rand() % boardWidth;
+	fruitY = rand() % boardHeight;
 }
 
 void draw()
 {
 	system("cls");
 
-	for (int i = 0; i < width + 1; i++)
+	for (int i = 0; i < boardWidth + 2; i++)
 	{
 		std::cout << '#';
 	}
 	std::cout << std::endl;
 
-	for (int i = 0; i < height; i++)
+	for (int i = 0; i < boardHeight; i++)
 	{
-		for (int j = 0; j < width; j++)
+		for (int j = 0; j <= boardWidth + 1; j++)
 		{
-			if (j == 0 || j == width - 1)
+			if (j == 0 || j == boardWidth + 1)
 			{
 				std::cout << '#';
 			}
+
 			
-			if (snakeX == j && snakeY == i)
+			else if (snakeX[0] == j && snakeY[0] == i)
 			{
-				std::cout << 'O';
+				std::cout << 'Q';
 			}
 			else if (fruitX == j && fruitY == i)
 			{
@@ -57,16 +55,16 @@ void draw()
 			else
 			{
 				bool print = false;
-				
-				for (int k = 0; k < tailN; k++)
+
+				for (int k = 1; k < snakeL; k++)
 				{
-					if (tailX[k] == j && tailY[k] == i)
+					if (snakeX[k] == j && snakeY[k] == i)
 					{
 						std::cout << 'o';
 						print = true;
 					}
 				}
-				
+
 				if (!print)
 				{
 					std::cout << ' ';
@@ -74,97 +72,95 @@ void draw()
 			}
 			
 
-
 		}
 		std::cout << std::endl;
 	}
 
-	for (int i = 0; i < width + 1; i++)
+	for (int i = 0; i < boardWidth + 2; i++)
 	{
 		std::cout << '#';
 	}
-	Sleep(50);
+	Sleep(100);
 }
 
 void input()
 {
 	if (_kbhit())
 	{
-		switch (_getch())
+		char key = _getch();
+
+		if (key == 'w' && dir != DOWN)
 		{
-		case 'a':
-			dir = LEFT;
-			break;
-		case 'd':
-			dir = RIGHT;
-			break;
-		case 's':
-			dir = DOWN;
-			break;
-		case 'w':
 			dir = UP;
-			break;
-		case 'x':
-			gameOver = true;
-			break;
+		}
+		if (key == 'd' && dir != LEFT)
+		{
+			dir = RIGHT;
+		}
+		if (key == 'a' && dir != RIGHT)
+		{
+			dir = LEFT;
+		}
+		if (key == 's' && dir != UP)
+		{
+			dir = DOWN;
 		}
 	}
 }
 
 void update()
 {
-	int prevX = tailX[0];
-	int prevY = tailY[0];
+	int prevX = snakeX[0];
+	int prevY = snakeY[0];
 	int prevX2, prevY2;
 
-	tailX[0] = snakeX;
-	tailY[0] = snakeY;
-
-	for (int i = 1; i < tailN; i++)
+	if (dir == UP)
 	{
-		prevX2 = tailX[i];
-		prevY2 = tailY[i];
-		tailX[i] = prevX;
-		tailY[i] = prevY;
+		snakeY[0]--;
+	}
+	else if (dir == DOWN)
+	{
+		snakeY[0]++;
+	}
+	else if (dir == RIGHT)
+	{
+		snakeX[0]++;
+	}
+	else if (dir == LEFT)
+	{
+		snakeX[0]--;
+	}
+
+	for (int i = 0; i < snakeL; i++)
+	{
+		if (snakeX[i] == fruitX && snakeY[i] == fruitY)
+		{
+			fruitX = rand() % boardWidth;
+			fruitY = rand() % boardHeight;
+			snakeL++;
+			snakeX.push_back(snakeX[i]);
+			snakeY.push_back(snakeY[i]);
+		}
+	}
+		
+	for (int i = 1; i < snakeL; i++)
+	{
+		prevX2 = snakeX[i];
+		prevY2 = snakeY[i];
+		snakeX[i] = prevX;
+		snakeY[i] = prevY;
 		prevX = prevX2;
 		prevY = prevY2;
-	}
 
-	switch (dir)
-	{
-		case LEFT:
-			snakeX--;
-			break;
-		case RIGHT:
-			snakeX++;
-			break;
-		case DOWN:
-			snakeY++;
-			break;
-		case UP:
-			snakeY--;
-			break;
-		default:
-			break;
-	}
-
-	if (snakeX > width - 2 || snakeX < 0 || snakeY < 0 || snakeY > height - 1)
-	{
-		gameOver = true;
-	}
-
-	for (int i = 0; i < tailN; i++) {
-		if (tailX[i] == snakeX && tailY[i] == snakeY)
+		if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i])
 		{
 			gameOver = true;
 		}
 	}
 
-	if (snakeX == fruitX && snakeY == fruitY)
+	if (snakeX[0] == 0 || snakeX[0] == boardWidth + 1 || snakeY[0] == -1 || snakeY[0] == boardHeight)
 	{
-		fruitX = rand() % width;
-		fruitY = rand() % height;
-		tailN++;
+		gameOver = true;
 	}
 }
 
@@ -178,6 +174,7 @@ int main()
 		input();
 		update();
 	}
+
 	Sleep(2000);
 	return 0;
 }
