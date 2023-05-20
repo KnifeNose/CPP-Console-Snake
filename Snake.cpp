@@ -1,50 +1,78 @@
 #include <iostream>
-#include <Windows.h>
-#include <vector>
+#include <windows.h>
 #include <conio.h>
+#include <vector>
+//#include <thread> // include the <thread> library
 
-bool gameOver;
-int boardWidth = 20;
-int boardHeight = 20;
-std::vector<int> snakeX, snakeY;
-int fruitX, fruitY;
-int snakeL;
+int boardHeigh, boardWidth, fruitX, fruitY;
+bool gameOver = false;
+std::vector<int> snakeX;
+std::vector<int> snakeY;
+int snakeL = 1;
 
-enum eDirection {STOP = 0, LEFT, RIGHT, UP, DOWN};
-eDirection dir;
+enum class direction {STOP = 0, LEFT, RIGHT, UP, DOWN};
+direction dir;
+
+
+// declare a new function to handle input in a separate thread
+//void input_thread()
+//{
+//	while (true)
+//	{
+//		char key = _getch(); // read the key without waiting for input
+//
+//		if (key == 'a' && dir != direction::RIGHT)
+//		{
+//			dir = direction::LEFT;
+//		}
+//		if (key == 'd' && dir != direction::LEFT)
+//		{
+//			dir = direction::RIGHT;
+//		}
+//		if (key == 'w' && dir != direction::DOWN)
+//		{
+//			dir = direction::UP;
+//		}
+//		if (key == 's' && dir != direction::UP)
+//		{
+//			dir = direction::DOWN;
+//		}
+//	}
+//}
 
 void setup()
 {
-	gameOver = false;
+	dir = direction::STOP;
+	boardHeigh = 20;
+	boardWidth = 20;
 	snakeX.push_back(10);
 	snakeY.push_back(10);
-	dir = STOP;
-	snakeL = 1;
-	fruitX = rand() % boardWidth;
-	fruitY = rand() % boardHeight;
+	fruitX = rand() % 20;
+	fruitY = rand() % 20;
 }
 
 void draw()
 {
 	system("cls");
 
+
 	for (int i = 0; i < boardWidth + 2; i++)
 	{
 		std::cout << '#';
 	}
+
 	std::cout << std::endl;
 
-	for (int i = 0; i < boardHeight; i++)
+	for (int i = 0; i < boardHeigh; i++)
 	{
-		for (int j = 0; j <= boardWidth + 1; j++)
+		for (int j = 0; j <= boardWidth; j++)
 		{
-			if (j == 0 || j == boardWidth + 1)
+			if (j == 0 || j == boardWidth)
 			{
 				std::cout << '#';
 			}
-
 			
-			else if (snakeX[0] == j && snakeY[0] == i)
+			if (snakeX[0] == j && snakeY[0] == i)
 			{
 				std::cout << 'Q';
 			}
@@ -54,33 +82,32 @@ void draw()
 			}
 			else
 			{
-				bool print = false;
+				bool print = true;
 
 				for (int k = 1; k < snakeL; k++)
 				{
 					if (snakeX[k] == j && snakeY[k] == i)
 					{
 						std::cout << 'o';
-						print = true;
+						print = false;
 					}
 				}
 
-				if (!print)
+				if (print) 
 				{
 					std::cout << ' ';
 				}
 			}
-			
-
 		}
 		std::cout << std::endl;
 	}
-
+	
 	for (int i = 0; i < boardWidth + 2; i++)
 	{
 		std::cout << '#';
 	}
-	Sleep(100);
+
+	Sleep(50);
 }
 
 void input()
@@ -88,85 +115,86 @@ void input()
 	if (_kbhit())
 	{
 		char key = _getch();
-
-		if (key == 'w' && dir != DOWN)
+		if (key == 'a' && dir != direction::RIGHT)
 		{
-			dir = UP;
+			dir = direction::LEFT;
 		}
-		if (key == 'd' && dir != LEFT)
+		if (key == 'd' && dir != direction::LEFT)
 		{
-			dir = RIGHT;
+			dir = direction::RIGHT;
 		}
-		if (key == 'a' && dir != RIGHT)
+		if (key == 'w' && dir != direction::DOWN)
 		{
-			dir = LEFT;
+			dir = direction::UP;
 		}
-		if (key == 's' && dir != UP)
+		if (key == 's' && dir != direction::UP)
 		{
-			dir = DOWN;
+			dir = direction::DOWN;
 		}
 	}
 }
 
 void update()
 {
-	int prevX = snakeX[0];
-	int prevY = snakeY[0];
-	int prevX2, prevY2;
+	int tempX = snakeX[0];
+	int tempY = snakeY[0];
+	int tempX2, tempY2;
 
-	if (dir == UP)
+
+
+	switch (dir)
 	{
-		snakeY[0]--;
-	}
-	else if (dir == DOWN)
-	{
-		snakeY[0]++;
-	}
-	else if (dir == RIGHT)
-	{
-		snakeX[0]++;
-	}
-	else if (dir == LEFT)
-	{
-		snakeX[0]--;
+		case direction::UP:
+			snakeY[0]--;
+			break;
+		case direction::DOWN:
+			snakeY[0]++;
+			break;
+		case direction::RIGHT:
+			snakeX[0]++;
+			break;
+		case direction::LEFT:
+			snakeX[0]--;
+			break;
+		default:
+			break;
 	}
 
-	for (int i = 0; i < snakeL; i++)
+	if (snakeX[0] == fruitX && snakeY[0] == fruitY)
 	{
-		if (snakeX[i] == fruitX && snakeY[i] == fruitY)
-		{
-			fruitX = rand() % boardWidth;
-			fruitY = rand() % boardHeight;
-			snakeL++;
-			snakeX.push_back(snakeX[i]);
-			snakeY.push_back(snakeY[i]);
-		}
+		fruitX = rand() % 20;
+		fruitY = rand() % 20;
+		snakeX.push_back(1);
+		snakeY.push_back(1);
+		snakeL++;
 	}
-		
+	
 	for (int i = 1; i < snakeL; i++)
 	{
-		prevX2 = snakeX[i];
-		prevY2 = snakeY[i];
-		snakeX[i] = prevX;
-		snakeY[i] = prevY;
-		prevX = prevX2;
-		prevY = prevY2;
+		tempX2 = snakeX[i];
+		tempY2 = snakeY[i];
+		snakeX[i] = tempX;
+		snakeY[i] = tempY;
+		tempX = tempX2;
+		tempY = tempY2;
 
 		if (snakeX[0] == snakeX[i] && snakeY[0] == snakeY[i])
 		{
 			gameOver = true;
 		}
+		
 	}
-
-	if (snakeX[0] == 0 || snakeX[0] == boardWidth + 1 || snakeY[0] == -1 || snakeY[0] == boardHeight)
-	{
-		gameOver = true;
-	}
+	
+		if (snakeX[0] > boardWidth - 1 || snakeX[0] < 0 || snakeY[0] < 0 || snakeY[0] > boardWidth - 1)
+		{
+			gameOver = true;
+		}
 }
 
 int main()
 {
 	setup();
+	//std::thread inputThread(input_thread);
 
 	while (!gameOver)
 	{
@@ -174,7 +202,7 @@ int main()
 		input();
 		update();
 	}
-
+	//inputThread.join();
 	Sleep(2000);
 	return 0;
 }
