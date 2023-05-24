@@ -9,8 +9,6 @@ const int height = 20;
 
 bool gameOver = false;
 
-
-
 Food food;
 Snake snake;
 
@@ -23,8 +21,10 @@ void setup()
 
 void draw()
 {
+	// Clear the console 
 	system("cls");
-
+	
+	// Draw the game
 	for (int i = 0; i < width + 2; i++)
 	{
 		std::cout << '#';
@@ -82,6 +82,7 @@ void draw()
 
 void input()
 {
+	// Controles
 	if (_kbhit())
 	{
 		int key = _getch();
@@ -107,6 +108,7 @@ void input()
 
 void update()
 {
+	// Functionality 
 	snake.update();
 
 	if ((snake.pos[0].first == food.pos.first) && (snake.pos[0].second == food.pos.second))
